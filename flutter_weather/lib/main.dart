@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -196,9 +197,9 @@ class _CityAddState extends State<CityAdd> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   // city_list
-  Future<String> get _cityList async {
+  Future<List> get _cityList async {
     final Directory appDocsDirectory = await getApplicationDocumentsDirectory();
-    final cityListPath = path.join('$appDocsDirectory/city_list.json.gz');
+    final cityListPath = path.join(appDocsDirectory.path, 'city_list.json.gz');
     final fileCompressed = File(cityListPath);
 
     // if (await fileCompressed.exists()) {
@@ -209,20 +210,14 @@ class _CityAddState extends State<CityAdd> {
 
     // todo: if file doesn't exist, then download it
 
-    // final decodedFile = base64Decode(fileCompressed.toString());
-    final Uint8List uint8list = await fileCompressed.readAsBytes();
-    final List<int> cityListJson = gzip.decode(uint8list);
-
-    // return cityListJson.substring(0, 100);
-    return "";
+    final Uint8List compressedBytes = await fileCompressed.readAsBytes();
+    final List<int> uncompressedBytes = gzip.decode(compressedBytes);
+    return jsonDecode(String.fromCharCodes(uncompressedBytes));
   }
 
   // form
   Future<void> _handleSubmit() async {
-    if (kDebugMode) {
-      print("Form submitted.");
-    }
-    print(await _cityList);
+    print('hello');
   }
 
   Widget _formSection() {
