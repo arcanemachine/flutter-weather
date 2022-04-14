@@ -1,12 +1,17 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
 
+import 'package:flutter_weather/keys.dart';
+
 class City {
-  final int id;
+  // final int id;
   final String name;
-  final String cityId;
+  final int cityId;
 
   const City({
-    required this.id,
+    // required this.id,
     required this.name,
     required this.cityId,
   });
@@ -14,66 +19,42 @@ class City {
   // representations
   @override
   String toString() {
-    return 'City{id: $id, name: $name, cityId: $cityId}';
+    // return 'City{id: $id, name: $name, cityId: $cityId}';
+    return 'City{name: $name, cityId: $cityId}';
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      // 'id': id,
       'name': name,
       'city_id': cityId,
     };
   }
 
   // methods
-  City copyWith({int? id, String? name, String? cityId}) {
+  // City copyWith({int? id, String? name, int? cityId}) {
+  City copyWith({String? name, int? cityId}) {
     return City(
-      id: id ?? this.id,
+      // id: id ?? this.id,
       name: name ?? this.name,
       cityId: cityId ?? this.cityId,
     );
   }
 }
 
-// setter-like methods
-City cityUpdateId(City city, int id) {
-  return City(
-      id: id,
-      name: city.name,
-      cityId: city.cityId,
-  );
-}
-
-City cityUpdateName(City city, String name) {
-  return City(
-      id: city.id,
-      name: name,
-      cityId: city.cityId,
-  );
-}
-
-City cityUpdateCityId(City city, String cityId) {
-  return City(
-    id: city.id,
-    name: city.name,
-    cityId: cityId,
-  );
-}
-
-
-/* CITY DATABASE METHODS */
+/* DATABASE METHODS */
 // list
 Future<List<City>> cityGetAll(db) async {
   // final db = await database;
 
   // query the table for all cities
-  final List<Map<String, dynamic>> maps = await db.query('cities');
+  final List<Map<String, dynamic>> cities = await db.query('cities');
 
   // convert the List<Map<String>> into a List<City>
-  return List.generate(maps.length, (i) => City(
-    id: maps[i]['id'],
-    name: maps[i]['name'],
-    cityId: maps[i]['city_id'],
+  return List.generate(cities.length, (i) => City(
+    // id: cities[i]['id'],
+    name: cities[i]['name'],
+    cityId: cities[i]['city_id'],
   ));
 }
 
@@ -90,15 +71,11 @@ Future<void> cityCreate(db, City city) async {
 
 
 // get city
-Future<City> cityGetById(List<City> cities, int id) async {
-  return cities.where((city) => city.id == id).first;
-}
-
 Future<City> cityGetByName(List<City> cities, String name) async {
   return cities.where((city) => city.name == name).first;
 }
 
-Future<City> cityGetByCityId(List<City> cities, String cityId) async {
+Future<City> cityGetByCityId(List<City> cities, int cityId) async {
   return cities.where((city) => city.cityId == cityId).first;
 }
 
@@ -109,19 +86,58 @@ Future<void> cityUpdate(db, City city) async {
   await db.update(
     'cities',
     city.toMap(),
-    where: 'id = ?',
-    whereArgs: [city.id],
+    // where: 'id = ?',
+    where: 'city_id = ?',
+    // whereArgs: [id],
+    whereArgs: [city.cityId],
   );
 }
 
 
 // delete city
-Future<void> cityDelete(db, int id) async {
+Future<void> cityDelete(db, City city) async {
   // final db = await database;
 
   await db.delete(
     'cities',
-    where: 'id = ?',
-    whereArgs: [id],
+    // where: 'id = ?',
+    where: 'city_id = ?',
+    // whereArgs: [id],
+    whereArgs: [city.cityId],
   );
+}
+
+
+/* CityWeather */
+class CityWeather {
+  final int cityId;
+  final double temp;
+
+  const CityWeather({
+    required this.cityId,
+    required this.temp,
+  });
+
+  factory CityWeather.fromJson(Map<String, dynamic> json) {
+    return CityWeather(
+      cityId: json['weather']['id'],
+      temp: json['main']['temp'],
+    );
+  }
+}
+
+Future<CityWeather> cityFetchWeather(cityName) async {
+  final weatherUrl = "https://api.openweathermap.org/data/2.5/weather/"
+    "?q=$cityName&appId=$weatherApiKey&units=metric";
+  final response = await http.get(Uri.parse(weatherUrl));
+
+  if (response.statusCode == 200) {
+    return CityWeather.fromJson(jsonDecode(response.body));
+  } else if (response.statusCode == 404) {
+    throw Exception("City not found");
+  } else if (response.statusCode == 401) {
+    throw Exception("Invalid API Key");
+  } else {
+    throw Exception("Server Error $response.statusCode");
+  }
 }

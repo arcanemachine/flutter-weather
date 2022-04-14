@@ -1,18 +1,12 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
+// import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-// import 'package:flutter_weather/examples.dart';
 import 'package:flutter_weather/models.dart';
-import 'package:flutter_weather/keys.dart';
 // import 'package:flutter_weather/helpers.dart';
 
 Future<Database> databaseGetOrCreate() async {
@@ -60,17 +54,22 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final _appTitle = "Flutter Weather";
-  late List<City> _cityList = [];
+  late List<City> _savedCityList = [];
+  // late Database _db;
 
   // lifecycle
   @override
   void initState() {
     super.initState();
 
+    savedCityListUpdate();
+  }
+
+  void savedCityListUpdate() {
     databaseGetOrCreate().then((database) {
-      cityGetAll(database).then((cityList) {
+      cityGetAll(database).then((savedCityList) {
         setState(() {
-          _cityList = cityList;
+          _savedCityList = savedCityList;
         });
       });
     });
@@ -80,33 +79,57 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
       title: _appTitle,
       home: HomeView(
         title: _appTitle,
-        cityList: _cityList,
+        // db: _db,
+        savedCityList: _savedCityList,
+        callback: savedCityListUpdate,
       ),
     );
   }
 }
 
 class HomeView extends StatefulWidget {
-  const HomeView({
-    Key? key,
+  const HomeView({Key? key,
     required this.title,
-    required this.cityList,
+    // required this.db,
+    required this.savedCityList,
+    required this.callback,
   }) : super(key: key);
 
   final String title;
-  final List<City> cityList;
+  // final Database db;
+  final List savedCityList;
+  final Function callback;
 
   @override
   State<HomeView> createState() => _HomeViewState();
 }
 
 class _HomeViewState extends State<HomeView> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      drawer: _drawer(),
+      body: Center(
+        child: _primaryWidget(),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () { _showPopupCityAdd(context); },
+        tooltip: "Add city",
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
   // drawer
   Widget _drawer() {
     return Drawer(
@@ -120,151 +143,180 @@ class _HomeViewState extends State<HomeView> {
             child: Center(
               child: Text(
                 "Your Cities",
+                textAlign: TextAlign.center,
                 style: TextStyle(
-                    fontSize: 24.0,
+                    fontSize: 20.0,
                     color: Colors.white
                 ),
               ),
             ),
           ),
-          widget.cityList.isEmpty
+          widget.savedCityList.isEmpty
             ? ListTile(
-              title: const Text(
-                "Add new city...",
-                textAlign: TextAlign.center,
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CityAdd()
-                  ),
-                );
+                title: const Text(
+                  "Add new city...",
+                  textAlign: TextAlign.center,
+                ),
+                onTap: () {
+                  _showPopupCityAdd(context);
               },
             )
             : ListTile(
-              title: const Text("City List"),
-              onTap: () {
+                title: const Text("savedCityList goes here..."),
+                onTap: () {
                 // Navigator.pop(context);
-              }
+                _showPopupCityAdd(context);
+                },
             ),
-          ],
-      ),
-    );
-  }
-
-  Widget _primaryWidget() {
-    return widget.cityList.isEmpty
-      ? const Text("You have not added any cities.")
-      : Text("You have added ${widget.cityList.length} cities.");
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      drawer: _drawer(),
-      body: Center(
-        child: _primaryWidget(),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const CityAdd(),
-            ),
-          );
-        },
-        tooltip: "Add city",
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-}
-
-class CityAdd extends StatefulWidget {
-  const CityAdd({Key? key}) : super(key: key);
-
-  @override
-  State<CityAdd> createState() => _CityAddState();
-}
-
-class _CityAddState extends State<CityAdd> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  // city_list
-  Future<List> get _cityList async {
-    final Directory appDocsDirectory = await getApplicationDocumentsDirectory();
-    final cityListPath = path.join(appDocsDirectory.path, 'city_list.json.gz');
-    final fileCompressed = File(cityListPath);
-
-    // if (await fileCompressed.exists()) {
-    //   if (kDebugMode) print("Found city_list.json.gz");
-    // } else {
-    //   if (kDebugMode) print("city_list.json.gz not found.");
-    // }
-
-    // todo: if file doesn't exist, then download it
-
-    final Uint8List compressedBytes = await fileCompressed.readAsBytes();
-    final List<int> uncompressedBytes = gzip.decode(compressedBytes);
-    return jsonDecode(String.fromCharCodes(uncompressedBytes));
-  }
-
-  // form
-  Future<void> _handleSubmit() async {
-    print('hello');
-  }
-
-  Widget _formSection() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Form(
-        key: _formKey,
-        child: Row(
-          children: <Widget>[
-            Flexible(child: TextFormField(
-              decoration: const InputDecoration(
-                hintText: "Enter a city name...",
-              ),
-              autofocus: true,
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return "Enter a city name.";
-                }
-                return null;
-              },
-              onFieldSubmitted: (val) => _handleSubmit(),
-            )),
-            Padding(
-              padding: const EdgeInsets.only(left: 16.0),
-              child: ElevatedButton(
-                child: const Padding(
-                  padding: EdgeInsets.all(12.0),
-                  child: Icon(Icons.search),
-                ),
-                onPressed: _handleSubmit,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build (BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Add New City")),
-      body: Column(
-        children: <Widget>[
-          _formSection(),
         ],
       ),
     );
+  }
+
+  // primary widget
+  Widget _primaryWidget() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        widget.savedCityList.isEmpty
+          ? const Text("You have not added any cities.")
+          : Text("You have added ${widget.savedCityList.length} cities."),
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: ElevatedButton(
+            child: const Text("Refresh City List"),
+            onPressed: () { widget.callback(); },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // add city
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _textFieldController = TextEditingController();
+  String _textValue = "";
+
+  @override
+  void initState() {
+    super.initState();
+
+    _textFieldController.addListener(() {
+      setState(() {
+        _textValue = _textFieldController.text;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _textFieldController.dispose();
+
+    super.dispose();
+  }
+
+
+  Widget _cityAddForm() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          TextFormField(
+            controller: _textFieldController,
+            decoration: const InputDecoration(
+                hintText: "Enter city name..."
+            ),
+            onFieldSubmitted: (val) {
+              _handleSubmit();
+            },
+            validator: (val) {
+              if (val == "") return "Enter a city name";
+              return null;
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showPopupCityAdd(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Add New City"),
+          content: _cityAddForm(),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: _handleSubmit,
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      }
+    );
+  }
+
+  void _handleSubmit() {
+    var cityName = _textValue;
+
+    // validate the form
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // reset the text field
+    setState(() {
+      _textValue = "";
+    });
+
+    // hide the popup
+    Navigator.of(context).pop();
+
+    // add the city
+    _cityAdd(cityName);
+  }
+
+  Future<void> _cityAdd(String cityName) async {
+    // check if the city already exists in _cityListSaved
+    for (var i = 0; i < widget.savedCityList.length; i++) {
+      if (widget.savedCityList.contains(cityName)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("This city is already in your saved cities.")
+          ),
+        );
+        return;
+      }
+    }
+
+    late CityWeather? newCityWeather;
+    try {
+      newCityWeather = await cityFetchWeather(cityName);
+    } catch (err) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(err.toString()),
+        ),
+      );
+    }
+
+    if (newCityWeather != null) {
+      City newCity = City(
+        // id: widget.savedCityList.length + 1,
+        name: cityName,
+        cityId: newCityWeather.cityId,
+      );
+
+      // cityUpdate(widget.db, newCity);
+    }
   }
 }
