@@ -20,8 +20,8 @@ class MyDrawer extends StatelessWidget {
                 "Your Cities",
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.white
+                  fontSize: 20.0,
+                  color: Colors.white
                 ),
               ),
             ),

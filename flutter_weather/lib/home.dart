@@ -159,7 +159,7 @@ class _HomeViewState extends State<HomeView> {
       }
     }
 
-    late String responseMessage;
+    late String resultMessage;
     try {
       // get weather for new city (to ensure the city exists
       final CityWeather newCityWeather = await weatherFetchByCityName(cityName);
@@ -172,14 +172,16 @@ class _HomeViewState extends State<HomeView> {
       );
 
       dbCityCreate(db, newCity); // add city to database
-      // todo: refresh the city list
-      //
+      context.read<AppState>().savedCityListUpdate(); // refresh the city list
+      resultMessage = "New city added: $cityName";
     } catch (err) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(err.toString()),
-        ),
-      );
+      resultMessage = err.toString();
     }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(resultMessage.toString()),
+      ),
+    );
   }
 }
