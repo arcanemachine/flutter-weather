@@ -69,8 +69,21 @@ class _HomeViewState extends State<HomeView> {
         Expanded(
           child: context.watch<AppState>().savedCityList.isEmpty
           ? const Text("")
-          : const Center(
-            child: CityList(),
+          : Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const <Widget>[
+                Text(
+                  "Select a City:",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(
+                  height: 16.0,
+                ),
+                CityList(),
+              ],
+            ),
           ),
         ),
         Padding(
