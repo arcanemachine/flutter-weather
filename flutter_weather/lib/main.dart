@@ -1,3 +1,5 @@
+// ignore: unused_import
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -195,18 +197,18 @@ class _HomeViewState extends State<HomeView> {
   // add city
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _textFieldController = TextEditingController();
-  String _textValue = "";
+  // String _textValue = "";
 
-  @override
-  void initState() {
-    super.initState();
+  // @override
+  // void initState() {
+  //   super.initState();
 
-    _textFieldController.addListener(() {
-      setState(() {
-        _textValue = _textFieldController.text;
-      });
-    });
-  }
+  //   _textFieldController.addListener(() {
+  //     setState(() {
+  //       _textValue = _textFieldController.text;
+  //     });
+  //   });
+  // }
 
   @override
   void dispose() {
@@ -224,6 +226,7 @@ class _HomeViewState extends State<HomeView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           TextFormField(
+            autofocus: true,
             controller: _textFieldController,
             decoration: const InputDecoration(
                 hintText: "Enter city name..."
@@ -266,17 +269,13 @@ class _HomeViewState extends State<HomeView> {
   }
 
   void _handleSubmit() {
-    var cityName = _textValue;
+    final cityName = _textFieldController.text;
 
     // validate the form
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     // reset the text field
-    setState(() {
-      _textValue = "";
-    });
+    setState(() { _textFieldController.text = ""; });
 
     // hide the popup
     Navigator.of(context).pop();
@@ -298,25 +297,25 @@ class _HomeViewState extends State<HomeView> {
       }
     }
 
-    late CityWeather? newCityWeather;
     try {
-      newCityWeather = await cityFetchWeather(cityName);
+      // get weather for new city
+      final CityWeather newCityWeather = await weatherFetchByCityName(cityName);
+
+      // create object for new city
+      final City newCity = City(
+        // id: widget.savedCityList.length + 1,
+        name: cityName,
+        cityId: newCityWeather.cityId,
+      );
+
+      dbCityCreate(widget.db, newCity);
+
     } catch (err) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text(err.toString()),
         ),
       );
-    }
-
-    if (newCityWeather != null) {
-      City newCity = City(
-        // id: widget.savedCityList.length + 1,
-        name: cityName,
-        cityId: newCityWeather.cityId,
-      );
-
-      // cityUpdate(widget.db, newCity);
     }
   }
 }

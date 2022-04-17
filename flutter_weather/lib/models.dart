@@ -1,4 +1,7 @@
 import 'dart:convert';
+// ignore: unused_import
+import 'dart:developer';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:sqflite/sqflite.dart';
@@ -120,24 +123,43 @@ class CityWeather {
 
   factory CityWeather.fromJson(Map<String, dynamic> json) {
     return CityWeather(
-      cityId: json['weather']['id'],
+      cityId: json['weather'][0]['id'],
       temp: json['main']['temp'],
     );
   }
 }
 
-Future<CityWeather> cityFetchWeather(cityName) async {
-  final weatherUrl = "https://api.openweathermap.org/data/2.5/weather/"
-    "?q=$cityName&appId=$weatherApiKey&units=metric";
-  final response = await http.get(Uri.parse(weatherUrl));
+Future<CityWeather> weatherFetchByCityName(String cityName) async {
+  /* return a JSON object containing the fetched weather */
 
-  if (response.statusCode == 200) {
-    return CityWeather.fromJson(jsonDecode(response.body));
-  } else if (response.statusCode == 404) {
-    throw Exception("City not found");
-  } else if (response.statusCode == 401) {
-    throw Exception("Invalid API Key");
-  } else {
-    throw Exception("Server Error $response.statusCode");
+  final String weatherUrl = "https://api.openweathermap.org/data/2.5/weather/"
+      "?q=$cityName&appId=$weatherApiKey&units=metric";
+  final http.Response response = await http.get(Uri.parse(weatherUrl));
+
+  return weatherGetFromResponse(response);
+}
+
+Future<CityWeather> weatherFetchByCityId(int cityId) async {
+  /* return a JSON object containing the fetched weather */
+
+  final String weatherUrl = "https://api.openweathermap.org/data/2.5/weather/"
+      "?id=$cityId&appId=$weatherApiKey&units=metric";
+  final http.Response response = await http.get(Uri.parse(weatherUrl));
+
+  return weatherGetFromResponse(response);
+}
+
+CityWeather weatherGetFromResponse(http.Response response) {
+  if (response.statusCode != 200) {
+    throw Exception(
+      "Error received: ${response.statusCode} (${response.reasonPhrase})"
+    );
   }
+
+  // decode json
+  final decodedResponse = jsonDecode(response.body);
+  assert(decodedResponse is Map);
+
+  final cityWeather = CityWeather.fromJson(decodedResponse);
+  return cityWeather;
 }
