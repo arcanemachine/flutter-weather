@@ -125,25 +125,25 @@ class _HomeViewState extends State<HomeView> {
 
   Future<void> _showPopupCityAdd(BuildContext context) {
     return showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text("Add New City"),
-            content: _cityAddForm(),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text("Cancel"),
-              ),
-              TextButton(
-                onPressed: _handleSubmit,
-                child: const Text("OK"),
-              ),
-            ],
-          );
-        }
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Add New City"),
+          content: _cityAddForm(),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: _handleSubmit,
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      }
     );
   }
 

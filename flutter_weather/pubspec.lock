@@ -88,6 +88,18 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_web_plugins:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.0"
+  go_router:
+    dependency: "direct main"
+    description:
+      name: go_router
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.7"
   http:
     dependency: "direct main"
     description:
@@ -108,7 +120,7 @@ packages:
       name: js
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.6.4"
+    version: "0.6.3"
   lints:
     dependency: transitive
     description:
@@ -116,6 +128,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.1"
+  logging:
+    dependency: transitive
+    description:
+      name: logging
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.2"
   matcher:
     dependency: transitive
     description:
@@ -246,28 +265,28 @@ packages:
       name: sqflite
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.2"
+    version: "2.0.2+1"
   sqflite_common:
     dependency: transitive
     description:
       name: sqflite_common
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.2.1"
+    version: "2.2.1+1"
   sqflite_common_ffi:
     dependency: "direct main"
     description:
       name: sqflite_common_ffi
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.1.0+2"
+    version: "2.1.1"
   sqlite3:
     dependency: transitive
     description:
       name: sqlite3
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.6.2"
+    version: "1.5.1"
   sqlite3_flutter_libs:
     dependency: "direct main"
     description:
