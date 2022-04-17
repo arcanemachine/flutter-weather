@@ -8,7 +8,7 @@ class AppState with ChangeNotifier {
   Future<Database> get db async => await databaseGetOrCreate();
 
   // savedCityList
-  late List<City> _savedCityList = [];
+  List<City> _savedCityList = [];
   List<City> get savedCityList => _savedCityList;
 
   void savedCityListUpdate() async {

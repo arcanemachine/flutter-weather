@@ -10,7 +10,6 @@ import 'dart:developer';
 // ignore: unused_import, unnecessary_import
 import 'package:flutter/foundation.dart';
 
-
 Future main() async {
   runApp(const App());
 }

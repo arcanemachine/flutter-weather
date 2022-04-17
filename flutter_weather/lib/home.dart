@@ -26,15 +26,13 @@ class _HomeViewState extends State<HomeView> {
   final TextEditingController _textFieldController = TextEditingController();
 
   late Database db;
-  late List savedCityList = context.watch<AppState>().savedCityList;
 
   @override
   void initState() {
     super.initState();
 
-    databaseGetOrCreate().then((database) {
-      db = database;
-    });
+    databaseGetOrCreate().then((database) { db = database; }); // get database
+    context.read<AppState>().savedCityListUpdate(); // get saved city list
   }
 
   @override
@@ -63,28 +61,23 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  // drawer
   // primary widget
   Widget _primaryWidget() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Expanded(
-          child: Center(
-            child: savedCityList.isEmpty
-                ? const Text("You have not added any cities.")
-                : const Center(
-              child: CityList(),
-            ),
+          child: context.watch<AppState>().savedCityList.isEmpty
+          ? const Text("")
+          : const Center(
+            child: CityList(),
           ),
         ),
         Padding(
           padding: const EdgeInsets.all(16),
           child: ElevatedButton(
             child: const Text("Refresh City List"),
-            onPressed: () {
-              context.read<AppState>().savedCityListUpdate();
-            },
+            onPressed: () { context.read<AppState>().savedCityListUpdate(); },
           ),
         ),
       ],

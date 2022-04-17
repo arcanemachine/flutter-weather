@@ -14,7 +14,10 @@ class CityList extends StatelessWidget {
         itemCount: context.watch<AppState>().savedCityList.length,
         itemBuilder: (BuildContext context, int i) {
           return ListTile(
-            title: Text(context.watch<AppState>().savedCityList[i].name),
+            title: Text(
+              context.watch<AppState>().savedCityList[i].name,
+              textAlign: TextAlign.center,
+            ),
             onTap: () {
               // todo: Create window for item
             },
