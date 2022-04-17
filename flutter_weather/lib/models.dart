@@ -3,8 +3,11 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:flutter_weather/keys.dart';
 
@@ -46,8 +49,40 @@ class City {
 }
 
 /* DATABASE METHODS */
+Future<Database> databaseGetOrCreate() async {
+  // platform-specific boilerplate
+  if (Platform.isWindows || Platform.isLinux) {
+    sqfliteFfiInit(); // initialize FFI
+  }
+  databaseFactory = databaseFactoryFfi;
+
+  // avoid errors caused by flutter upgrade
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // get or create database
+  final db = openDatabase(
+    path.join(await getDatabasesPath(), 'db.sqlite3'),
+    onCreate: (database, version) {
+      return database.execute(
+        'CREATE TABLE cities('
+            'id INTEGER PRIMARY KEY,'
+            'name TEXT,'
+            'city_id TEXT'
+            ')',
+      );
+    },
+    version: 1,
+  );
+
+  // if (kDebugMode) {
+  //   runExamples(db);
+  // }
+
+  return db;
+}
+
 // list
-Future<List<City>> cityGetAll(db) async {
+Future<List<City>> dbCityGetAll(db) async {
   // final db = await database;
 
   // query the table for all cities
@@ -62,7 +97,7 @@ Future<List<City>> cityGetAll(db) async {
 }
 
 // create city
-Future<void> cityCreate(db, City city) async {
+Future<void> dbCityCreate(db, City city) async {
   // final db = await database;
 
   await db.insert(
@@ -74,16 +109,16 @@ Future<void> cityCreate(db, City city) async {
 
 
 // get city
-Future<City> cityGetByName(List<City> cities, String name) async {
+Future<City> dbCityGetByName(List<City> cities, String name) async {
   return cities.where((city) => city.name == name).first;
 }
 
-Future<City> cityGetByCityId(List<City> cities, int cityId) async {
+Future<City> dbCityGetByCityId(List<City> cities, int cityId) async {
   return cities.where((city) => city.cityId == cityId).first;
 }
 
 // update city
-Future<void> cityUpdate(db, City city) async {
+Future<void> dbCityUpdate(db, City city) async {
   // final db = await database;
 
   await db.update(
@@ -98,7 +133,7 @@ Future<void> cityUpdate(db, City city) async {
 
 
 // delete city
-Future<void> cityDelete(db, City city) async {
+Future<void> dbCityDelete(db, City city) async {
   // final db = await database;
 
   await db.delete(
