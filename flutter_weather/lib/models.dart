@@ -1,6 +1,4 @@
 import 'dart:convert';
-// ignore: unused_import
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
@@ -10,6 +8,12 @@ import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:flutter_weather/keys.dart';
+
+// todo: remove unused/unnecessary imports
+// ignore: unused_import
+import 'dart:developer';
+// ignore: unused_import
+import 'package:flutter/foundation.dart';
 
 class City {
   // final int id;
@@ -52,7 +56,7 @@ class City {
 Future<Database> databaseGetOrCreate() async {
   // platform-specific boilerplate
   if (Platform.isWindows || Platform.isLinux) {
-    sqfliteFfiInit(); // initialize FFI
+    sqfliteFfiInit();
   }
   databaseFactory = databaseFactoryFfi;
 
@@ -65,10 +69,10 @@ Future<Database> databaseGetOrCreate() async {
     onCreate: (database, version) {
       return database.execute(
         'CREATE TABLE cities('
-            'id INTEGER PRIMARY KEY,'
-            'name TEXT,'
-            'city_id TEXT'
-            ')',
+          // 'id INTEGER PRIMARY KEY,'
+          'name TEXT,'
+          'city_id TEXT'
+        ')',
       );
     },
     version: 1,
@@ -82,7 +86,7 @@ Future<Database> databaseGetOrCreate() async {
 }
 
 // list
-Future<List<City>> dbCityGetAll(db) async {
+Future<List<City>> dbCityGetAll(Database db) async {
   // final db = await database;
 
   // query the table for all cities
@@ -92,12 +96,12 @@ Future<List<City>> dbCityGetAll(db) async {
   return List.generate(cities.length, (i) => City(
     // id: cities[i]['id'],
     name: cities[i]['name'],
-    cityId: cities[i]['city_id'],
+    cityId: int.parse(cities[i]['city_id']),
   ));
 }
 
 // create city
-Future<void> dbCityCreate(db, City city) async {
+Future<void> dbCityCreate(Database db, City city) async {
   // final db = await database;
 
   await db.insert(
@@ -105,6 +109,10 @@ Future<void> dbCityCreate(db, City city) async {
     city.toMap(),
     conflictAlgorithm: ConflictAlgorithm.replace,
   );
+
+  if (kDebugMode) {
+    print("New city added to database: ${city.name}");
+  }
 }
 
 
@@ -118,7 +126,7 @@ Future<City> dbCityGetByCityId(List<City> cities, int cityId) async {
 }
 
 // update city
-Future<void> dbCityUpdate(db, City city) async {
+Future<void> dbCityUpdate(Database db, City city) async {
   // final db = await database;
 
   await db.update(
@@ -133,7 +141,7 @@ Future<void> dbCityUpdate(db, City city) async {
 
 
 // delete city
-Future<void> dbCityDelete(db, City city) async {
+Future<void> dbCityDelete(Database db, City city) async {
   // final db = await database;
 
   await db.delete(
