@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Expanded(
           child: context.watch<AppState>().savedCityList.isEmpty
-          ? const Text("")
+          ? const Center(child: Text("Click the blue '+' icon to add a city."))
           : Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -84,13 +84,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 CityList(),
               ],
             ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: ElevatedButton(
-            child: const Text("Refresh City List"),
-            onPressed: () { context.read<AppState>().savedCityListUpdate(); },
           ),
         ),
       ],
@@ -204,18 +197,31 @@ class CityList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+
     return Padding(
       padding: const EdgeInsets.all(0),
-      child: ListView.builder(
-        itemCount: context.watch<AppState>().savedCityList.length,
+      child: state.savedCityList.isEmpty
+        ? const Padding(
+            padding: EdgeInsets.only(top: 16.0),
+            child: Text(
+              "Click the blue '+' icon to add a city.",
+              textAlign: TextAlign.center,
+            )
+          )
+        : ListView.builder(
+        itemCount: state.savedCityList.length,
         itemBuilder: (BuildContext context, int i) {
           return ListTile(
             title: Text(
-              context.watch<AppState>().savedCityList[i].name,
+              state.savedCityList[i].name,
               textAlign: TextAlign.center,
             ),
             onTap: () {
-              context.push('/weather');
+              state.currentCityWeatherUpdateById(state.savedCityList[i].cityId)
+                .then((placeholderVar) {
+                  context.push('/weather');
+              });
             },
           );
         },

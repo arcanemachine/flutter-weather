@@ -8,18 +8,32 @@ class AppState with ChangeNotifier {
   Future<Database> get db async => await databaseGetOrCreate();
 
   // savedCityList
-  List<City> _savedCityList = [];
-  List<City> get savedCityList => _savedCityList;
+  List<City> savedCityList = [];
 
   void savedCityListUpdate() async {
-    dbCityGetAll(await db).then((savedCityList) {
-      _savedCityList = savedCityList;
+    dbCityGetAll(await db).then((dbSavedCityList) {
+      savedCityList = dbSavedCityList;
 
-      if (kDebugMode) {
-        print(_savedCityList);
-      }
+      // if (kDebugMode) {
+      //   print(savedCityList);
+      // }
     });
 
     notifyListeners();
+  }
+
+  // currentCityId
+  // int? currentCityId;
+  // void currentCityIdSet(cityId) {
+  //   currentCityId = cityId;
+
+  //   // update weather for current city
+  //   currentCityWeatherUpdateById(cityId);
+  // }
+
+  // currentCityWeather
+  late CityWeather currentCityWeather = const CityWeather(cityId: 0, temp: -60);
+  Future<void> currentCityWeatherUpdateById(cityId) async {
+    currentCityWeather = await weatherFetchByCityId(cityId);
   }
 }

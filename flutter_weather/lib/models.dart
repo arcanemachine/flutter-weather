@@ -166,29 +166,33 @@ class CityWeather {
 
   factory CityWeather.fromJson(Map<String, dynamic> json) {
     return CityWeather(
-      cityId: json['weather'][0]['id'],
+      cityId: json['id'],
       temp: json['main']['temp'],
     );
   }
 }
 
 Future<CityWeather> weatherFetchByCityName(String cityName) async {
-  /* return a JSON object containing the fetched weather */
+  if (kDebugMode) print("Getting weather for '$cityName'...");
 
   final String weatherUrl = "https://api.openweathermap.org/data/2.5/weather/"
       "?q=$cityName&appId=$weatherApiKey&units=metric";
-  final http.Response response = await http.get(Uri.parse(weatherUrl));
 
+  if (kDebugMode) print("Querying URL: $weatherUrl");
+
+  final http.Response response = await http.get(Uri.parse(weatherUrl));
   return weatherGetFromResponse(response);
 }
 
 Future<CityWeather> weatherFetchByCityId(int cityId) async {
-  /* return a JSON object containing the fetched weather */
+  if (kDebugMode) print("Getting weather for city Id: $cityId...");
 
   final String weatherUrl = "https://api.openweathermap.org/data/2.5/weather/"
       "?id=$cityId&appId=$weatherApiKey&units=metric";
-  final http.Response response = await http.get(Uri.parse(weatherUrl));
 
+  if (kDebugMode) print("Querying URL: $weatherUrl");
+
+  final http.Response response = await http.get(Uri.parse(weatherUrl));
   return weatherGetFromResponse(response);
 }
 
