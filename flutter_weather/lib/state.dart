@@ -23,16 +23,16 @@ class AppState with ChangeNotifier {
   }
 
   // currentCityId
-  // int? currentCityId;
-  // void currentCityIdSet(cityId) {
-  //   currentCityId = cityId;
+  late int? currentCityId;
+  void currentCityIdSet(cityId) {
+    currentCityId = cityId;
 
-  //   // update weather for current city
-  //   currentCityWeatherUpdateById(cityId);
-  // }
+    // update weather for current city
+    currentCityWeatherUpdateById(cityId);
+  }
 
   // currentCityWeather
-  late CityWeather currentCityWeather = const CityWeather(cityId: 0, temp: -60);
+  late CityWeather currentCityWeather;
   Future<void> currentCityWeatherUpdateById(cityId) async {
     currentCityWeather = await weatherFetchByCityId(cityId);
   }

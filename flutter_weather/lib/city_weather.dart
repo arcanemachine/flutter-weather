@@ -10,7 +10,7 @@ class CityWeatherScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<AppState>();
+    final weather = context.watch<AppState>().currentCityWeather;
 
     return Scaffold(
       appBar: AppBar(
@@ -18,12 +18,21 @@ class CityWeatherScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        title: const Text("Current Weather"),
+        title: Text("Current Weather: ${weather.name}"),
       ),
       body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text("Current weather: ${state.currentCityWeather.temp} degrees C"),
+            Text("Current Weather: ${weather.name}"),
+            const SizedBox(height: 16),
+            Text("Temperature: ${weather.temp} degrees C"),
+            Text("Conditions: ${weather.description}"),
+            Text("Feels Like: ${weather.feelsLike} degrees C"),
+            const SizedBox(height: 16),
+            Text("Updated on: ${
+              DateTime.fromMillisecondsSinceEpoch(weather.date * 1000)
+            }"),
           ],
         ),
       ),

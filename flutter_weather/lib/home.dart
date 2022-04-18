@@ -219,7 +219,7 @@ class CityList extends StatelessWidget {
             ),
             onTap: () {
               state.currentCityWeatherUpdateById(state.savedCityList[i].cityId)
-                .then((placeholderVar) {
+                .then((placeholder) {
                   context.push('/weather');
               });
             },

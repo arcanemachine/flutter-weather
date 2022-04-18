@@ -157,17 +157,29 @@ Future<void> dbCityDelete(Database db, City city) async {
 /* CityWeather */
 class CityWeather {
   final int cityId;
+  final String name;
+  final int date;
   final double temp;
+  final String description;
+  final double feelsLike;
 
   const CityWeather({
     required this.cityId,
+    required this.name,
+    required this.date,
     required this.temp,
+    required this.description,
+    required this.feelsLike,
   });
 
   factory CityWeather.fromJson(Map<String, dynamic> json) {
     return CityWeather(
       cityId: json['id'],
+      name: json['name'],
+      date: json['dt'],
       temp: json['main']['temp'],
+      description: json['weather'][0]['description'],
+      feelsLike: json['main']['feels_like'],
     );
   }
 }
