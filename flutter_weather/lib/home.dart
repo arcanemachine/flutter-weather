@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'package:flutter_weather/city_list.dart';
 import 'package:flutter_weather/drawer.dart';
 import 'package:flutter_weather/models.dart';
 import 'package:flutter_weather/state.dart';
@@ -14,14 +14,14 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 
 
-class HomeView extends StatefulWidget {
-  const HomeView({Key? key}) : super(key: key);
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
-  State<HomeView> createState() => _HomeViewState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeViewState extends State<HomeView> {
+class _HomeScreenState extends State<HomeScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _textFieldController = TextEditingController();
 
@@ -194,6 +194,32 @@ class _HomeViewState extends State<HomeView> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(resultMessage.toString()),
+      ),
+    );
+  }
+}
+
+class CityList extends StatelessWidget {
+  const CityList({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(0),
+      child: ListView.builder(
+        itemCount: context.watch<AppState>().savedCityList.length,
+        itemBuilder: (BuildContext context, int i) {
+          return ListTile(
+            title: Text(
+              context.watch<AppState>().savedCityList[i].name,
+              textAlign: TextAlign.center,
+            ),
+            onTap: () {
+              context.push('/weather');
+            },
+          );
+        },
+        shrinkWrap: true,
       ),
     );
   }

@@ -22,5 +22,4 @@ class AppState with ChangeNotifier {
 
     notifyListeners();
   }
-
 }
