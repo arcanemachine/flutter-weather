@@ -150,43 +150,38 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _cityAdd(String cityName) async {
-    final Database db = await context.read<AppState>().db;
-    final List savedCityList = context.read<AppState>().savedCityList;
-
-    // check if the city already exists in _cityListSaved
-    for (var i = 0; i < savedCityList.length; i++) {
-      if (savedCityList.contains(cityName)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text("This city is already in your saved cities.")
-          ),
-        );
-        return;
-      }
-    }
-
     late String resultMessage;
     try {
-      // get weather for new city (to ensure the city exists
+      // ensure this city exists by attempting to get its current weather
       final CityWeather newCityWeather = await weatherFetchByCityName(cityName);
 
-      // create object for new city
+      // create city object
       final City newCity = City(
-        // id: widget.savedCityList.length + 1,
         name: cityName,
         cityId: newCityWeather.cityId,
       );
 
-      dbCityCreate(db, newCity); // add city to database
-      context.read<AppState>().savedCityListUpdate(); // refresh the city list
+      // ensure the city is not already in the database
+      if (await dbCityGetByCityId(db, newCity.cityId) != null) {
+        throw Exception("This city is already in the list.");
+      }
+
+      // add city to the database
+      dbCityCreate(db, newCity);
       resultMessage = "New city added: $cityName";
-    } catch (err) {
-      resultMessage = err.toString();
+      context.read<AppState>().savedCityListUpdate(); // refresh the city list
+    } catch (e) {
+      resultMessage = e.toString().substring(11);
     }
 
+    // show resultMessage in snackbar
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(resultMessage.toString()),
+        content: Text(resultMessage),
+        action: SnackBarAction(
+          label: 'OK',
+          onPressed: () {},
+        ),
       ),
     );
   }
@@ -218,11 +213,48 @@ class CityList extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             onTap: () {
+              // view current weather
               state.currentCityWeatherUpdateById(state.savedCityList[i].cityId)
-                .then((placeholder) {
-                  context.push('/weather');
+                   .then((placeholderVar) {
+                context.push('/weather');
               });
             },
+            onLongPress: () => showDialog(
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                title: const Text("Remove City"),
+                content: Text(
+                  "Remove '${state.savedCityList[i].name}' from the list?"
+                ),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text("Cancel"),
+                    onPressed: () => Navigator.pop(context, "Cancel"),
+                  ),
+                  TextButton(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      databaseGetOrCreate().then((database) {
+                        // delete the city
+                        dbCityDelete(database, state.savedCityList[i]);
+                        state.savedCityListUpdate();
+                        Navigator.pop(context, "OK");
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text("City deleted"),
+                            action: SnackBarAction(
+                              label: 'OK',
+                              onPressed: () {},
+                            ),
+                          ),
+                        );
+                      });
+                    }
+                  ),
+                ],
+              )
+            ),
           );
         },
         shrinkWrap: true,

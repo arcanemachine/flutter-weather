@@ -10,7 +10,9 @@ class AppState with ChangeNotifier {
   // savedCityList
   List<City> savedCityList = [];
 
-  void savedCityListUpdate() async {
+  Future<void> savedCityListUpdate() async {
+    // savedCityList = [];
+
     dbCityGetAll(await db).then((dbSavedCityList) {
       savedCityList = dbSavedCityList;
 
