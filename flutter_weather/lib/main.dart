@@ -14,6 +14,7 @@ import 'package:flutter/foundation.dart';
 
 Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   runApp(const App());
 }
 

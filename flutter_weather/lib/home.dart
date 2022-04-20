@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:sqflite/sqflite.dart';
 
 import 'package:flutter_weather/drawer.dart';
 import 'package:flutter_weather/models.dart';
@@ -25,14 +24,14 @@ class _HomeScreenState extends State<HomeScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _textFieldController = TextEditingController();
 
-  late Database db;
+  late final AppState state;
 
   @override
   void initState() {
     super.initState();
 
-    databaseGetOrCreate().then((database) { db = database; }); // get database
-    context.read<AppState>().savedCityListUpdate(); // get saved city list
+    state = context.read<AppState>();
+    state.savedCityListUpdate(); // get saved city list
   }
 
   @override
@@ -162,12 +161,12 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       // ensure the city is not already in the database
-      if (await dbCityGetByCityId(db, newCity.cityId) != null) {
+      if (await dbCityGetByCityId(await state.db, newCity.cityId) != null) {
         throw Exception("This city is already in the list.");
       }
 
       // add city to the database
-      dbCityCreate(db, newCity);
+      dbCityCreate(await state.db, newCity);
       resultMessage = "New city added: $cityName";
       context.read<AppState>().savedCityListUpdate(); // refresh the city list
     } catch (e) {

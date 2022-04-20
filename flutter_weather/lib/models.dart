@@ -57,8 +57,8 @@ Future<Database> databaseGetOrCreate() async {
   // platform-specific boilerplate
   if (Platform.isWindows || Platform.isLinux) {
     sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
   }
-  databaseFactory = databaseFactoryFfi;
 
   // avoid errors caused by flutter upgrade
   WidgetsFlutterBinding.ensureInitialized();
@@ -78,9 +78,7 @@ Future<Database> databaseGetOrCreate() async {
     version: 1,
   );
 
-  // if (kDebugMode) {
-  //   runExamples(db);
-  // }
+  // if (kDebugMode) runExamples(db);
 
   return db;
 }
